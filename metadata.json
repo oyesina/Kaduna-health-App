@@ -1,0 +1,5 @@
+{
+  "name": "Kaduna Health AI",
+  "description": "AI-powered diagnostic and outbreak monitoring tool for Community Health Volunteers in Kaduna State.",
+  "requestFramePermissions": ["camera"]
+}
