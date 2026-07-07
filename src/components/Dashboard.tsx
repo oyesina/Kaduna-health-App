@@ -1,7 +1,36 @@
 import React from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Activity, Users, Map, HeartPulse } from "lucide-react";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { Activity, Users, Map, HeartPulse, TrendingUp, PieChart as PieChartIcon } from "lucide-react";
 import { motion } from "motion/react";
+import { 
+  LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, 
+  BarChart, Bar, PieChart, Pie, Cell, Legend 
+} from 'recharts';
+
+const trendData = [
+  { name: 'Mon', assessments: 45, alerts: 2 },
+  { name: 'Tue', assessments: 52, alerts: 4 },
+  { name: 'Wed', assessments: 38, alerts: 1 },
+  { name: 'Thu', assessments: 65, alerts: 7 },
+  { name: 'Fri', assessments: 48, alerts: 3 },
+  { name: 'Sat', assessments: 59, alerts: 5 },
+  { name: 'Sun', assessments: 42, alerts: 2 },
+];
+
+const diseaseData = [
+  { name: 'Malaria', value: 45, color: '#141414' },
+  { name: 'Pneumonia', value: 25, color: '#404040' },
+  { name: 'Diarrhea', value: 20, color: '#737373' },
+  { name: 'Malnutrition', value: 10, color: '#A3A3A3' },
+];
+
+const districtData = [
+  { name: 'Kaduna S.', cases: 120 },
+  { name: 'Igabi', cases: 85 },
+  { name: 'Chikun', cases: 95 },
+  { name: 'Zaria', cases: 40 },
+  { name: 'Giwa', cases: 30 },
+];
 
 export default function Dashboard() {
   const stats = [
@@ -44,6 +73,154 @@ export default function Dashboard() {
             </Card>
           </motion.div>
         ))}
+      </div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        {/* Weekly Trends Chart */}
+        <Card className="border-[#141414]/10 shadow-none rounded-sm">
+          <CardHeader className="border-b border-[#141414]/5 bg-white/50">
+            <div className="flex items-center gap-2">
+              <TrendingUp className="w-4 h-4 opacity-40" />
+              <CardTitle className="font-serif italic text-xl">Weekly Assessment Trends</CardTitle>
+            </div>
+            <CardDescription className="font-mono text-[10px] uppercase tracking-wider">
+              Daily volume of AI-assisted health diagnostics
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="pt-6">
+            <div className="h-[300px] w-full">
+              <ResponsiveContainer width="100%" height="100%">
+                <LineChart data={trendData}>
+                  <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#14141410" />
+                  <XAxis 
+                    dataKey="name" 
+                    axisLine={false} 
+                    tickLine={false} 
+                    tick={{ fontSize: 10, fontFamily: 'monospace', opacity: 0.5 }}
+                  />
+                  <YAxis 
+                    axisLine={false} 
+                    tickLine={false} 
+                    tick={{ fontSize: 10, fontFamily: 'monospace', opacity: 0.5 }}
+                  />
+                  <Tooltip 
+                    contentStyle={{ 
+                      backgroundColor: '#141414', 
+                      border: 'none', 
+                      borderRadius: '2px',
+                      color: '#fff',
+                      fontSize: '10px',
+                      fontFamily: 'monospace'
+                    }}
+                    itemStyle={{ color: '#fff' }}
+                  />
+                  <Line 
+                    type="monotone" 
+                    dataKey="assessments" 
+                    stroke="#141414" 
+                    strokeWidth={2} 
+                    dot={{ r: 4, fill: '#141414' }} 
+                    activeDot={{ r: 6 }} 
+                  />
+                </LineChart>
+              </ResponsiveContainer>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Disease Prevalence Chart */}
+        <Card className="border-[#141414]/10 shadow-none rounded-sm">
+          <CardHeader className="border-b border-[#141414]/5 bg-white/50">
+            <div className="flex items-center gap-2">
+              <PieChartIcon className="w-4 h-4 opacity-40" />
+              <CardTitle className="font-serif italic text-xl">Disease Prevalence</CardTitle>
+            </div>
+            <CardDescription className="font-mono text-[10px] uppercase tracking-wider">
+              Distribution of diagnosed conditions across all districts
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="pt-6">
+            <div className="h-[300px] w-full">
+              <ResponsiveContainer width="100%" height="100%">
+                <PieChart>
+                  <Pie
+                    data={diseaseData}
+                    cx="50%"
+                    cy="50%"
+                    innerRadius={60}
+                    outerRadius={80}
+                    paddingAngle={5}
+                    dataKey="value"
+                  >
+                    {diseaseData.map((entry, index) => (
+                      <Cell key={`cell-${index}`} fill={entry.color} />
+                    ))}
+                  </Pie>
+                  <Tooltip 
+                    contentStyle={{ 
+                      backgroundColor: '#141414', 
+                      border: 'none', 
+                      borderRadius: '2px',
+                      color: '#fff',
+                      fontSize: '10px',
+                      fontFamily: 'monospace'
+                    }}
+                  />
+                  <Legend 
+                    verticalAlign="bottom" 
+                    height={36}
+                    formatter={(value) => <span className="text-[10px] font-mono uppercase opacity-60">{value}</span>}
+                  />
+                </PieChart>
+              </ResponsiveContainer>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* District Activity Chart */}
+        <Card className="border-[#141414]/10 shadow-none rounded-sm lg:col-span-2">
+          <CardHeader className="border-b border-[#141414]/5 bg-white/50">
+            <div className="flex items-center gap-2">
+              <Map className="w-4 h-4 opacity-40" />
+              <CardTitle className="font-serif italic text-xl">District Case Volume</CardTitle>
+            </div>
+            <CardDescription className="font-mono text-[10px] uppercase tracking-wider">
+              Total reported cases by district in the last 30 days
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="pt-6">
+            <div className="h-[300px] w-full">
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart data={districtData}>
+                  <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#14141410" />
+                  <XAxis 
+                    dataKey="name" 
+                    axisLine={false} 
+                    tickLine={false} 
+                    tick={{ fontSize: 10, fontFamily: 'monospace', opacity: 0.5 }}
+                  />
+                  <YAxis 
+                    axisLine={false} 
+                    tickLine={false} 
+                    tick={{ fontSize: 10, fontFamily: 'monospace', opacity: 0.5 }}
+                  />
+                  <Tooltip 
+                    cursor={{ fill: '#14141405' }}
+                    contentStyle={{ 
+                      backgroundColor: '#141414', 
+                      border: 'none', 
+                      borderRadius: '2px',
+                      color: '#fff',
+                      fontSize: '10px',
+                      fontFamily: 'monospace'
+                    }}
+                  />
+                  <Bar dataKey="cases" fill="#141414" radius={[2, 2, 0, 0]} />
+                </BarChart>
+              </ResponsiveContainer>
+            </div>
+          </CardContent>
+        </Card>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -96,3 +273,4 @@ export default function Dashboard() {
     </div>
   );
 }
+

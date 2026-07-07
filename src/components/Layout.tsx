@@ -1,6 +1,8 @@
 import React from "react";
-import { Activity, AlertTriangle, LayoutDashboard, Stethoscope, Camera } from "lucide-react";
+import { Activity, AlertTriangle, LayoutDashboard, Stethoscope, Camera, Users } from "lucide-react";
 import { cn } from "@/lib/utils";
+import PatientRegistration from "./PatientRegistration";
+import NotificationManager from "./NotificationManager";
 
 interface LayoutProps {
   children: React.ReactNode;
@@ -11,6 +13,7 @@ interface LayoutProps {
 export default function Layout({ children, activeTab, onTabChange }: LayoutProps) {
   const navItems = [
     { id: "dashboard", label: "Dashboard", icon: LayoutDashboard },
+    { id: "patients", label: "Patients", icon: Users },
     { id: "diagnostics", label: "Diagnostics", icon: Stethoscope },
     { id: "malnutrition", label: "Malnutrition", icon: Camera },
     { id: "alerts", label: "Outbreak Alerts", icon: AlertTriangle },
@@ -29,10 +32,14 @@ export default function Layout({ children, activeTab, onTabChange }: LayoutProps
               Kaduna Health AI
             </h1>
           </div>
-          <div className="flex items-center gap-4">
-            <span className="text-xs font-mono opacity-50 uppercase tracking-widest">
-              District: Kaduna South
-            </span>
+          <div className="flex items-center gap-6">
+            <div className="hidden sm:flex items-center gap-4">
+              <span className="text-[10px] font-mono opacity-50 uppercase tracking-widest">
+                District: Kaduna South
+              </span>
+              <PatientRegistration />
+            </div>
+            <NotificationManager />
             <div className="w-8 h-8 rounded-full bg-[#141414]/5 border border-[#141414]/10 flex items-center justify-center">
               <span className="text-[10px] font-bold">CHV</span>
             </div>

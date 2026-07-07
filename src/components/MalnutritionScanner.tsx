@@ -6,6 +6,7 @@ import { Loader2, Camera, RefreshCw, AlertTriangle, CheckCircle } from "lucide-r
 import { motion, AnimatePresence } from "motion/react";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
+import { toast } from "sonner";
 
 export default function MalnutritionScanner() {
   const [image, setImage] = useState<string | null>(null);
@@ -60,6 +61,7 @@ export default function MalnutritionScanner() {
       setResult(res);
     } catch (error) {
       console.error("Malnutrition detection failed:", error);
+      toast.error("Image analysis failed. Please try again.");
     } finally {
       setLoading(false);
     }

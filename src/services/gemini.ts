@@ -1,6 +1,12 @@
 import { GoogleGenAI, Type } from "@google/genai";
 
-const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY || "" });
+const getAI = () => {
+  const apiKey = process.env.GEMINI_API_KEY;
+  if (!apiKey) {
+    throw new Error("GEMINI_API_KEY is not set in the environment variables.");
+  }
+  return new GoogleGenAI({ apiKey });
+};
 
 export interface DiagnosticResult {
   condition: string;
@@ -16,6 +22,7 @@ export interface MalnutritionResult {
 }
 
 export const analyzeSymptoms = async (symptoms: string): Promise<DiagnosticResult> => {
+  const ai = getAI();
   const response = await ai.models.generateContent({
     model: "gemini-3-flash-preview",
     contents: `Analyze the following symptoms for a child in a rural district of Kaduna State, Nigeria. 
@@ -38,10 +45,13 @@ export const analyzeSymptoms = async (symptoms: string): Promise<DiagnosticResul
     },
   });
 
-  return JSON.parse(response.text || "{}");
+  const text = (response as any).text;
+  if (!text) throw new Error("Empty response from AI");
+  return JSON.parse(text);
 };
 
 export const detectMalnutrition = async (base64Image: string): Promise<MalnutritionResult> => {
+  const ai = getAI();
   const response = await ai.models.generateContent({
     model: "gemini-3-flash-preview",
     contents: {
@@ -71,10 +81,13 @@ export const detectMalnutrition = async (base64Image: string): Promise<Malnutrit
     },
   });
 
-  return JSON.parse(response.text || "{}");
+  const text = (response as any).text;
+  if (!text) throw new Error("Empty response from AI");
+  return JSON.parse(text);
 };
 
 export const generateOutbreakAlerts = async (data: string): Promise<any> => {
+  const ai = getAI();
   const response = await ai.models.generateContent({
     model: "gemini-3-flash-preview",
     contents: `Based on the following health data from various districts in Kaduna State, identify potential disease outbreaks and provide alerts.
@@ -100,5 +113,7 @@ export const generateOutbreakAlerts = async (data: string): Promise<any> => {
     },
   });
 
-  return JSON.parse(response.text || "[]");
+  const text = (response as any).text;
+  if (!text) throw new Error("Empty response from AI");
+  return JSON.parse(text);
 };

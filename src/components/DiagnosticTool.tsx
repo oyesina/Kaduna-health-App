@@ -1,16 +1,32 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { analyzeSymptoms, DiagnosticResult } from "@/src/services/gemini";
-import { Loader2, AlertCircle, CheckCircle2, Info } from "lucide-react";
+import { Loader2, AlertCircle, CheckCircle2, Info, Stethoscope, User } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
 import { Badge } from "@/components/ui/badge";
+import { cn } from "@/lib/utils";
+import { toast } from "sonner";
+import { patientService, Patient } from "@/src/services/patientService";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 export default function DiagnosticTool() {
   const [symptoms, setSymptoms] = useState("");
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<DiagnosticResult | null>(null);
+  const [patients, setPatients] = useState<Patient[]>([]);
+  const [selectedPatientId, setSelectedPatientId] = useState<string>("");
+
+  useEffect(() => {
+    setPatients(patientService.getPatients());
+  }, []);
 
   const handleAnalyze = async () => {
     if (!symptoms.trim()) return;
@@ -18,8 +34,27 @@ export default function DiagnosticTool() {
     try {
       const res = await analyzeSymptoms(symptoms);
       setResult(res);
+      
+      if (selectedPatientId) {
+        patientService.addDiagnosticRecord(selectedPatientId, symptoms, res);
+        toast.success("Diagnostic record saved to patient history");
+      }
+
+      if (res.urgency === "high") {
+        const patientName = selectedPatientId ? patients.find(p => p.id === selectedPatientId)?.name : "Anonymous Patient";
+        fetch("/api/notify-all", {
+          method: "POST",
+          body: JSON.stringify({
+            title: "Urgent Outbreak Alert",
+            body: `High urgency case detected: ${res.condition} for ${patientName} in ${symptoms.substring(0, 50)}...`,
+            data: { urgency: "high", condition: res.condition }
+          }),
+          headers: { "Content-Type": "application/json" },
+        }).catch(err => console.error("Push notify error:", err));
+      }
     } catch (error) {
       console.error("Analysis failed:", error);
+      toast.error("Analysis failed. Please check your connection and try again.");
     } finally {
       setLoading(false);
     }
@@ -44,6 +79,25 @@ export default function DiagnosticTool() {
           </CardDescription>
         </CardHeader>
         <CardContent className="pt-6 space-y-4">
+          <div className="space-y-2">
+            <Label className="font-mono text-[10px] uppercase tracking-widest opacity-60">
+              Select Patient (Optional)
+            </Label>
+            <Select value={selectedPatientId} onValueChange={setSelectedPatientId}>
+              <SelectTrigger className="w-full bg-[#141414]/5 border-[#141414]/10 rounded-sm font-sans text-sm h-12">
+                <SelectValue placeholder="Select a registered patient to tie record" />
+              </SelectTrigger>
+              <SelectContent className="bg-white border-[#141414]/10 rounded-sm">
+                <SelectItem value="none" className="font-sans text-sm">No Patient (Anonymous)</SelectItem>
+                {patients.map((p) => (
+                  <SelectItem key={p.id} value={p.id} className="font-sans text-sm">
+                    {p.name} ({p.phone})
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+
           <div className="space-y-2">
             <Label htmlFor="symptoms" className="font-mono text-[10px] uppercase tracking-widest opacity-60">
               Recorded Symptoms
@@ -127,6 +181,3 @@ export default function DiagnosticTool() {
     </div>
   );
 }
-
-import { Stethoscope } from "lucide-react";
-import { cn } from "@/lib/utils";

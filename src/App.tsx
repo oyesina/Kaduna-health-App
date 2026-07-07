@@ -9,6 +9,7 @@ import Dashboard from "./components/Dashboard";
 import DiagnosticTool from "./components/DiagnosticTool";
 import MalnutritionScanner from "./components/MalnutritionScanner";
 import AlertDashboard from "./components/AlertDashboard";
+import PatientList from "./components/PatientList";
 import { Toaster } from "@/components/ui/sonner";
 
 export default function App() {
@@ -24,6 +25,8 @@ export default function App() {
         return <MalnutritionScanner />;
       case "alerts":
         return <AlertDashboard />;
+      case "patients":
+        return <PatientList />;
       default:
         return <Dashboard />;
     }

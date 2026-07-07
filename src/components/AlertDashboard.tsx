@@ -6,6 +6,7 @@ import { AlertTriangle, MapPin, ShieldAlert, Clock, ArrowUpRight } from "lucide-
 import { motion } from "motion/react";
 import { generateOutbreakAlerts } from "@/src/services/gemini";
 import { cn } from "@/lib/utils";
+import { toast } from "sonner";
 
 interface Alert {
   district: string;
@@ -34,6 +35,7 @@ export default function AlertDashboard() {
         setAlerts(res);
       } catch (error) {
         console.error("Failed to fetch alerts:", error);
+        toast.error("Failed to load outbreak alerts.");
       } finally {
         setLoading(false);
       }
@@ -48,6 +50,25 @@ export default function AlertDashboard() {
       case "medium": return "bg-orange-500";
       case "low": return "bg-blue-500";
       default: return "bg-gray-500";
+    }
+  };
+
+  const broadcastAlert = async (alert: Alert) => {
+    try {
+      const res = await fetch("/api/notify-all", {
+        method: "POST",
+        body: JSON.stringify({
+          title: `PUBLIC HEALTH ALERT: ${alert.disease}`,
+          body: `District: ${alert.district}. ${alert.description}`,
+          data: { type: "outbreak", risk: alert.riskLevel }
+        }),
+        headers: { "Content-Type": "application/json" },
+      });
+      
+      const data = await res.json();
+      toast.success(`Alert broadcasted to ${data.count} subscribers`);
+    } catch (error) {
+      toast.error("Failed to broadcast alert");
     }
   };
 
@@ -135,12 +156,21 @@ export default function AlertDashboard() {
                       <p className="text-sm leading-relaxed opacity-80">{alert.description}</p>
                     </div>
                     
-                    <div className="p-4 bg-white border border-[#141414]/10 rounded-sm space-y-2">
+                    <div className="p-4 bg-white border border-[#141414]/10 rounded-sm space-y-3">
                       <div className="text-[10px] font-mono uppercase tracking-widest opacity-40 flex justify-between">
                         Action Required
                         <ArrowUpRight className="w-3 h-3 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
                       </div>
                       <p className="text-xs font-medium">{alert.actionRequired}</p>
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          broadcastAlert(alert);
+                        }}
+                        className="w-full mt-2 py-2 bg-red-600 text-white text-[10px] font-mono uppercase tracking-widest rounded-sm hover:bg-red-700 transition-colors"
+                      >
+                        Broadcast to Districts
+                      </button>
                     </div>
                   </div>
                 </motion.div>
